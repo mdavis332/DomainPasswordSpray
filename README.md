@@ -46,6 +46,13 @@ Get-DomainUserList -Domain domainname.local -RemoveDisabled -RemovePotentialLock
 
 The above gif depicts a parallel spray against 250 users with 2 consecutive passwords, all in 18 seconds.
 
+## Planned Updates
+- [x] Take array of strings for UserList & PasswordList params
+- [x] Improve progress bar status
+- [x] Exclude locked out accounts from the ldap filter
+- [ ] Accept ADUser objects
+- [ ] Introduce throttle/sneaky parameters to reduce login attempts to a certain number within threshold of time (to avoid SIEM rules)
+
 ## Contributing
 Contributions, fixes, and improvements can be submitted directly against this project as a GitHub issue or pull request.
 
