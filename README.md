@@ -39,6 +39,6 @@ This command will write the domain user list without disabled accounts or accoun
 Get-DomainUserList -Domain domainname.local -RemoveDisabled -RemovePotentialLockouts | Out-File -Encoding ascii userlist.txt
 ```
 ## Demo
-![alt text](.\images\pwspray-demo480.gif "Animated gif demo")
+![alt text](images/pwspray-demo480.gif "Animated gif demo")
 
 The above gif depicts a parallel spray against 250 users with 2 consecutive passwords, all in 18 seconds.
