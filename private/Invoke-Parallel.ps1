@@ -247,8 +247,8 @@ function Invoke-Parallel {
 
                     #Progress bar if we have inputobject count (bound parameter)
                     if (-not $Quiet) {
-                        Write-Progress  -Activity "Running Query" -Status "Starting threads"`
-                            -CurrentOperation "$startedCount threads defined - $totalCount input objects - $script:completedCount input objects processed"`
+                        Write-Progress  -Activity "Spraying users" -Status "Starting threads - Password: $Password"`
+                            -CurrentOperation "$startedCount threads defined - $totalCount users - $script:completedCount users processed"`
                             -PercentComplete $( Try { $script:completedCount / $totalCount * 100 } Catch {0} )
                     }
 
@@ -541,7 +541,7 @@ function Invoke-Parallel {
 
             Get-RunspaceData -wait
             if (-not $quiet) {
-                Write-Progress -Activity "Running Query" -Status "Starting threads" -Completed
+                Write-Progress -Activity "Spraying users" -Status "Starting threads" -Completed
             }
         }
         finally {
