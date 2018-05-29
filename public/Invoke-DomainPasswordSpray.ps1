@@ -94,7 +94,6 @@ function Invoke-DomainPasswordSpray {
 		# if there's no lockout threshold (ie, lockoutThreshold = 0, don't bother removing potential lockouts)
 		if ($LockoutThreshold -eq 0) {
 			$UserList = Get-DomainUserList -RemoveDisabled -SmallestLockoutThreshold $LockoutThreshold -DomainName $DomainName
-			Write-Host -ForegroundColor Yellow '[*] There appears to be no lockout policy. Go nuts'
 		} else {
 			$UserList = Get-DomainUserList -RemoveDisabled -RemovePotentialLockouts -SmallestLockoutThreshold $LockoutThreshold -DomainName $DomainName
 			Write-Host "[*] The smallest lockout threshold discovered in the domain is $LockoutThreshold login attempts."
@@ -104,6 +103,9 @@ function Invoke-DomainPasswordSpray {
 	if ($UserList -eq $null -or $UserList.count -lt 1) {
 		Write-Error '[*] No users available to spray. Exiting'
 		break
+	}
+	if ($LockoutThreshold -eq 0) {
+		Write-Host -ForegroundColor Yellow '[*] There appears to be no lockout policy. Go nuts'
 	}
 
 	Write-Host "[*] The domain password policy observation window is set to $ObservationWindow minutes."
