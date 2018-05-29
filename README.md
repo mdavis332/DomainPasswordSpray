@@ -81,5 +81,6 @@ SOFTWARE.
 
 # Acknowledgments
 * [dafthack/DomainPasswordSpray](https://github.com/dafthack/DomainPasswordSpray)
+* [@RamblingCookieMonster](https://github.com/RamblingCookieMonster)
 * [@egypt](https://github.com/egypt)
 
