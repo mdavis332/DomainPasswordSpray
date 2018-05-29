@@ -19,6 +19,9 @@ The following command will automatically generate a list of users from the curre
 Invoke-DomainPasswordSpray -PasswordList 'Spring2017'
 ```
 
+### Output
+Output leaves the function as a PowerShell object. You can therefore pass output down the pipeline to other functions such as Out-File or other testing tools that make up your toolkit.
+
 The following command will use the userlist at users.txt and try to authenticate to the domain "domain.local" using each password in the passlist.txt file one at a time. It will automatically attempt to detect the domain's lockout observation window and restrict sprays to one attempt during each window. The results of the spray will be output to a file called sprayed-creds.txt
 ```PowerShell
 Invoke-DomainPasswordSpray -UserList (Get-Content 'c:\users.txt') -DomainName 'domain.local' -PasswordList (Get-Content '.\passlist.txt') | Out-File 'sprayed-creds.txt'
@@ -39,6 +42,6 @@ This command will write the domain user list without disabled accounts or accoun
 Get-DomainUserList -Domain domainname.local -RemoveDisabled -RemovePotentialLockouts | Out-File -Encoding ascii userlist.txt
 ```
 ## Demo
-![alt text](images/pwspray-demo480.gif "Animated gif demo")
+![alt text](.\images\pwspray-demo480.gif "Animated gif demo")
 
 The above gif depicts a parallel spray against 250 users with 2 consecutive passwords, all in 18 seconds.
