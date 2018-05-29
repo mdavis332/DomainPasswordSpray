@@ -83,10 +83,11 @@ function Get-DomainUserList {
 		Write-Host '[*] Excluding disabled and locked out users from search criteria'
 		# more precise LDAP filter UAC check for users that are disabled (Joff Thyer)
 		# LDAP 1.2.840.113556.1.4.803 means bitwise &
+		# LDAP 1.2.840.113556.1.4.804 means bitwise OR
 		# uac 0x2 is ACCOUNTDISABLE
 		# uac 0x10 is LOCKOUT
 		# See http://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/. Thanks @egypt
-		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.803:=18)$Filter)"
+		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.804:=18)$Filter)"
 	} else {
 		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)$Filter)"
 	}
@@ -94,12 +95,13 @@ function Get-DomainUserList {
 	# grab batches of 1000 in results
 	$UserSearcher.PageSize = 1000
 	$AllUserObjects = $UserSearcher.FindAll()
-	Write-Host "[*] There are $($AllUserObjects.count) total users found that met filter criteria"
+	Write-Host "[*] There are $($AllUserObjects.count) total users returned after filter criteria"
 	$UserListArray = New-Object System.Collections.ArrayList
+	$UsersToRemove = New-Object System.Collections.ArrayList
 	
 	if ($RemovePotentialLockouts) {
 	
-		Write-Host -ForegroundColor Yellow '[*] Removing users within 1 attempt of locking out from list'
+		Write-Host '[*] Removing users within 1 attempt of locking out from list'
 		$CurrentTime = Get-Date
 		foreach ($User in $AllUserObjects) {
 			# Getting bad password counts and lst bad password time for each user
@@ -124,11 +126,16 @@ function Get-DomainUserList {
 				# if there is no lockout threshold (ie, threshold = 0)
 				# if there is more than 1 attempt left before a user locks out 
 				# or if the time since the last failed login is greater than the domain observation window add user to spray list
+				if ($SmallestLockoutThreshold -ne 0 -and $AttemptsUntilLockout -lt 2 -and $TimeDifference -lt $ObservationWindow){
+					$UsersToRemove.Add($SamAccountName) > $null
+				}
 				if ($SmallestLockoutThreshold -eq 0 -or $AttemptsUntilLockout -gt 1 -or $TimeDifference -gt $ObservationWindow) {
 					$UserListArray.Add($SamAccountName) > $null
 				}
+
 			}
 		}
+		Write-Host -ForegroundColor Yellow "[*] Removing $($UsersToRemove.count) users from spray list due to being within 1 attempt of locking out"
 	} else {
 		
 		foreach ($User in $AllUserObjects) {
@@ -137,6 +144,7 @@ function Get-DomainUserList {
 		}
 	}
 	
-	Write-Host "[*] Created a userlist containing $($UserListArray.count) users gathered from the current user's domain"
+	Write-Host "[*] Created a final userlist containing $($UserListArray.count) users gathered from the current user's domain"
 	$UserListArray
+
 }
