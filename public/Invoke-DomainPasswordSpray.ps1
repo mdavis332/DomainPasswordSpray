@@ -59,6 +59,8 @@ function Invoke-DomainPasswordSpray {
 		[string]$DomainName
 	)
 
+	$StartTime = Get-Date
+	
 	$DomainObject =[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
 	if ($DomainName -eq $null -or $DomainName -eq '') {
 		$DomainName = $DomainObject.Name
@@ -72,9 +74,6 @@ function Invoke-DomainPasswordSpray {
 		Write-Error '[*] Could not connect to the domain. Try again specifying the domain name with the -DomainName option'
 		break
 	}
-	
-	# Just output a bunch of empty lines so Write-Progress doesn't cover up useful info
-	1..11 | ForEach-Object { Write-Host '[*] ...' }
 	
 	$DomainPasswordPolicy = Get-DomainPasswordPolicy -DomainName $DomainName -CheckPso
 
@@ -109,8 +108,6 @@ function Invoke-DomainPasswordSpray {
 	}
 
 	Write-Host "[*] The domain password policy observation window is set to $ObservationWindow minutes."
-	$StartTime = Get-Date
-
 	Write-Host -ForegroundColor Yellow "[*] Password spraying has begun against $($UserList.count) users on the $DomainName domain. Current time is $($StartTime.ToShortTimeString())"
 	
 	$CurrentPasswordIndex = 0
