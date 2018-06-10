@@ -75,10 +75,10 @@ function Get-DomainPasswordPolicy {
 				foreach($Entry in $PSOs) {
 					# Selecting the lockout threshold, min pwd length, and which groups the fine-grained password policy applies to
 					$PSOFineGrainedPolicy = $Entry | Select-Object -ExpandProperty Properties
-					$PSOPolicyName = $PSOFineGrainedPolicy.name
-					$PSOLockoutThreshold = $PSOFineGrainedPolicy.'msds-lockoutthreshold'
-					$PSOAppliesTo = $PSOFineGrainedPolicy.'msds-psoappliesto'
-					$PSOMinPwdLength = $PSOFineGrainedPolicy.'msds-minimumpasswordlength'
+					$PSOPolicyName = $PSOFineGrainedPolicy.name[0]
+					$PSOLockoutThreshold = $PSOFineGrainedPolicy.'msds-lockoutthreshold'[0]
+					$PSOAppliesTo = $PSOFineGrainedPolicy.'msds-psoappliesto'[0]
+					$PSOMinPwdLength = $PSOFineGrainedPolicy.'msds-minimumpasswordlength'[0]
 					# adding lockout threshold to array for use later to determine which is the lowest.
 					$AccountLockoutThresholds.Add($PSOLockoutThreshold) > $null
 
