@@ -95,9 +95,9 @@ function Get-DomainUserList {
 	# grab batches of 1000 in results
 	$UserSearcher.PageSize = 1000
 	$AllUserObjects = $UserSearcher.FindAll()
-	Write-Verbose "[*] There are $($AllUserObjects.count) total users returned after filter criteria"
+	Write-Verbose "[*] There were $($AllUserObjects.count) users returned after filtering out disabled or locked out accounts"
 	[System.Collections.ArrayList]$UserListArray = @()
-	[System.Collections.ArrayList]$UsersToRemove = @()
+	$RemovedUserCount = 0
 	
 	if ($RemovePotentialLockouts) {
 	
@@ -125,16 +125,18 @@ function Get-DomainUserList {
 				# if there is no lockout threshold (ie, threshold = 0)
 				# if there is more than 1 attempt left before a user locks out 
 				# or if the time since the last failed login is greater than the domain observation window add user to spray list
-				if ($SmallestLockoutThreshold -ne 0 -and $AttemptsUntilLockout -lt 2 -and $TimeDifference -lt $ObservationWindow){
-					$UsersToRemove.Add($SamAccountName) > $null
-				}
 				if ($SmallestLockoutThreshold -eq 0 -or $AttemptsUntilLockout -gt 1 -or $TimeDifference -gt $ObservationWindow) {
 					$UserListArray.Add($SamAccountName) > $null
+				} else {
+					$RemovedUserCount++
 				}
 
+			} elseif ($BadCount -eq 0) {
+				# if they get here, it means BadCount = 0, no worries about locking out the account, so we add it
+				$UserListArray.Add($SamAccountName) > $null
 			}
 		}
-		Write-Verbose "[*] Removing $($UsersToRemove.count) users from spray list due to being within 1 attempt of locking out"
+		Write-Verbose "[*] Removed $RemovedUserCount users from spray list due to being within 1 attempt of locking out"
 	} else {
 		
 		foreach ($User in $AllUserObjects) {
