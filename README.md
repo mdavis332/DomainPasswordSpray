@@ -56,7 +56,7 @@ The above gif depicts a parallel spray against 250 users with 2 consecutive pass
 - [x] Take array of strings for UserList & PasswordList params
 - [x] Improve progress bar status
 - [x] Exclude locked out accounts from the ldap filter
-~~Accept ADUser objects~~ (not sure about this anymore)
+- ~~Accept ADUser objects~~ (not sure about this anymore)
 - [ ] Introduce throttle/sneaky parameters to reduce login attempts to a certain number within threshold of time (to avoid SIEM rules)
 
 ## Contributing
