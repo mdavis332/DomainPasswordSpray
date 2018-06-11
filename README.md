@@ -10,6 +10,7 @@ This module uses Warren Frame's (@RamblingCookieMonster) Invoke-Parallel to proc
 
 ## Quick Start Guide
 Minimum PowerShell version: 3
+
 No other modules required (has been coded to preclude the need for the ActiveDirectory module)
 
 Open a PowerShell terminal from the Windows command line with 'powershell.exe -exec bypass'.
