@@ -74,24 +74,24 @@ function Get-DomainUserList {
 	$UserSearcher.PropertiesToLoad.Add("samaccountname") > $null
 	$UserSearcher.PropertiesToLoad.Add("badpwdcount") > $null
 	$UserSearcher.PropertiesToLoad.Add("badpasswordtime") > $null
-	
+	$Now = [datetime]::Now.toFiletime()
 	if ($RemoveDisabled) {
-		Write-Verbose '[*] Excluding disabled and locked out users from search criteria'
+		Write-Verbose '[*] Excluding disabled, locked out, and expired users from search criteria'
 		# more precise LDAP filter UAC check for users that are disabled (Joff Thyer)
 		# LDAP 1.2.840.113556.1.4.803 means bitwise &
 		# LDAP 1.2.840.113556.1.4.804 means bitwise OR
 		# uac 0x2 is ACCOUNTDISABLE
 		# uac 0x10 is LOCKOUT
 		# See http://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/. Thanks @egypt
-		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.804:=18)$Filter)"
+		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.804:=18)(|(accountExpires>=$Now)(accountExpires=0))$Filter)"
 	} else {
-		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)$Filter)"
+		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(|(accountExpires>=$Now)(accountExpires=0))$Filter)"
 	}
 
 	# grab batches of 1000 in results
 	$UserSearcher.PageSize = 1000
 	$AllUserObjects = $UserSearcher.FindAll()
-	Write-Verbose "[*] There were $($AllUserObjects.count) users returned after filtering out disabled or locked out accounts"
+	Write-Verbose "[*] There were $($AllUserObjects.count) users returned after filtering out disabled, locked out, and expired accounts"
 	[System.Collections.ArrayList]$UserListArray = @()
 	$RemovedUserCount = 0
 	
