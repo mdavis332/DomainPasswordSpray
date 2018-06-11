@@ -9,6 +9,9 @@ DomainPasswordSpray is a tool written in PowerShell to perform a password spray 
 This module uses Warren Frame's (@RamblingCookieMonster) Invoke-Parallel to process the users simultaneously in batches of 20 and speed up the spray. In tests, this has reduced scan time by up to 83%. This module has been tested against 9000 users in a production AD environment with a runtime under 60 seconds.
 
 ## Quick Start Guide
+Minimum PowerShell version: 3
+No other modules required (has been coded to preclude the need for the ActiveDirectory module)
+
 Open a PowerShell terminal from the Windows command line with 'powershell.exe -exec bypass'.
 
 CD to the DomainPasswordSpray root and:
@@ -25,11 +28,11 @@ Invoke-DomainPasswordSpray -Password 'Spring2017'
 ```
 
 ### Output
-Output leaves the function as a PowerShell object. You can therefore pass output down the pipeline to other functions such as Out-File or other testing tools that make up your toolkit.
+Output leaves the function as a PowerShell object. You can therefore pass output down the pipeline to other functions such as Add-Content or other testing tools that make up your toolkit. If writing to a file while spraying with multiple passwords, it is recommend to use Add-Content rather than Out-File. Out-File will wait until the very last password is finished before writing content so an interruption in scanning will leave a blank file with no logged results. Using Add-Content locks the file during use but continually writes to it as objects are received so any disruptions to scanning will leave a file with the results up to that point.
 
 The following command will use the userlist at users.txt and try to authenticate to the domain "domain.local" using each password in the passlist.txt file one at a time. It will automatically attempt to detect the domain's lockout observation window and restrict sprays to one attempt during each window. The results of the spray will be output to a file called sprayed-creds.txt
 ```PowerShell
-Invoke-DomainPasswordSpray -UserName (Get-Content 'c:\users.txt') -DomainName 'domain.local' -Password (Get-Content '.\passlist.txt') | Out-File 'sprayed-creds.txt'
+Invoke-DomainPasswordSpray -UserName (Get-Content 'c:\users.txt') -DomainName 'domain.local' -Password (Get-Content '.\passlist.txt') | Add-Content 'sprayed-creds.txt'
 ```
 
 ### Invoke-DomainPasswordSpray Options
@@ -41,12 +44,10 @@ ShowProgress      - Optional switch. When specified, displays progress bar for u
 Verbose           - Optional switch. When specified, writes status messages out to console.
 
 ```
-## Get-DomainUserList Function
-The function Get-DomainUserList allows you to generate a userlist from the domain. It has options to remove disabled accounts and those that are about to be locked out. This is performed automatically in DomainPasswordSpray.
-
-This command will write the domain user list without disabled accounts or accounts about to be locked out to a file at "userlist.txt".
+## Other Examples
+While care has been taken to remove dependency on other modules (like ActiveDirectory), you can feed Get-ADUser results to this function:
 ```PowerShell
-Get-DomainUserList -Domain domainname.local -RemoveDisabled -RemovePotentialLockouts | Out-File -Encoding ascii userlist.txt
+Invoke-DomainPasswordSpray -UserName (Get-ADUser -SearchBase "OU=Special,OU=Accounts,DC=domain,DC=local" -Filter * | Select -Expand SamAccountName) -Password 'Fall2017'
 ```
 ## Demo
 ![alt text](images/pwspray-demo480.gif "Animated gif demo")
