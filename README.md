@@ -2,6 +2,7 @@
 DomainPasswordSpray is a tool written in PowerShell to perform a password spray attack against users of a domain. By default it will automatically generate the userlist from the domain whether a user provides username(s) at runtime or not. If runtime userlist is provided, it will be compared against the auto-generated list and all user-provided usernames that meet the following criteria will be excluded from the final spray list:
 - Locked out
 - Disabled
+- Expired
 - Nonexistent
 - Within 1 bad password attempt of a lockout
 
