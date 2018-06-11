@@ -1,36 +1,32 @@
 function Get-DomainUserList {
 	<#
     .SYNOPSIS
-    This module gathers a userlist from the domain.
-    
-    DomainPasswordSpray Function: Get-DomainUserList
-    Author: Beau Bullock (@dafthack) and Michael Davis (@mdavis332)
-    License: MIT
-    Required Dependencies: None
-    Optional Dependencies: None
+    This function gathers a userlist from the domain.
     .DESCRIPTION
-    	This module gathers a userlist from the domain.
+    	This function gathers a userlist from the domain.
+		Author: Beau Bullock (@dafthack) and Michael Davis (@mdavis332)
+		License: MIT
     .PARAMETER DomainName
-    	The domain to spray against.
+    	Optional. The domain to spray against.
     .PARAMETER RemoveDisabled
-    	Attempts to remove disabled accounts from the userlist. (Credit to Sally Vandeven (@sallyvdv))   
+    	Optional. Attempts to remove disabled accounts from the userlist. (Credit to Sally Vandeven (@sallyvdv))   
     .PARAMETER RemovePotentialLockouts
-		Removes accounts within 1 attempt of locking out.
+		Optional. Removes accounts within 1 attempt of locking out.
 	.PARAMETER Filter
-		Custom LDAP filter for users, e.g. "(description=*admin*)". Thanks to @egypt
+		Optional. Custom LDAP filter for users, e.g. "(description=*admin*)". Thanks to @egypt
     
     .EXAMPLE
-    C:\PS> Get-DomainUserList
-    Description
-    -----------
-    This command will gather a userlist from the current domain including all samAccountType "805306368".
+		C:\PS> Get-DomainUserList
+		Description
+		-----------
+		This command will gather a userlist from the current domain including all samAccountType "805306368".
     
     .EXAMPLE
-    C:\PS> Get-DomainUserList -DomainName domainname.net -RemoveDisabled -RemovePotentialLockouts | Out-File -Encoding ascii userlist.txt
-    Description
-    -----------
-    This command will gather a userlist from the domain "domainname.net" including any accounts that are not disabled and are not close to locking out. 
-	It will write them to a file at "userlist.txt"
+		C:\PS> Get-DomainUserList -DomainName domainname.net -RemoveDisabled -RemovePotentialLockouts | Out-File -Encoding ascii userlist.txt
+		Description
+		-----------
+		This command will gather a userlist from the domain "domainname.net" including any accounts that are not disabled and are not close to locking out. 
+		It will write them to a file at "userlist.txt"
     
     #>
 	[CmdletBinding()]
