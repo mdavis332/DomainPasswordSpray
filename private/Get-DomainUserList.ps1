@@ -60,7 +60,7 @@ function Get-DomainUserList {
 		$DomainDn = ([ADSI]"LDAP://$DomainName").distinguishedName
 		$CurrentDomain = "LDAP://$DomainDn"
     } catch {
-		Write-Error '[*] Could connect to the domain. Try again specifying the domain name with the -DomainName option'
+		Write-Error '[*] Could not connect to the domain. Try again specifying the domain name with the -DomainName option'
 		break
     }
 
@@ -80,7 +80,7 @@ function Get-DomainUserList {
 	$UserSearcher.PropertiesToLoad.Add("badpasswordtime") > $null
 	
 	if ($RemoveDisabled) {
-		Write-Host '[*] Excluding disabled and locked out users from search criteria'
+		Write-Verbose '[*] Excluding disabled and locked out users from search criteria'
 		# more precise LDAP filter UAC check for users that are disabled (Joff Thyer)
 		# LDAP 1.2.840.113556.1.4.803 means bitwise &
 		# LDAP 1.2.840.113556.1.4.804 means bitwise OR
@@ -95,18 +95,17 @@ function Get-DomainUserList {
 	# grab batches of 1000 in results
 	$UserSearcher.PageSize = 1000
 	$AllUserObjects = $UserSearcher.FindAll()
-	Write-Host "[*] There are $($AllUserObjects.count) total users returned after filter criteria"
-	$UserListArray = New-Object System.Collections.ArrayList
-	$UsersToRemove = New-Object System.Collections.ArrayList
+	Write-Verbose "[*] There are $($AllUserObjects.count) total users returned after filter criteria"
+	[System.Collections.ArrayList]$UserListArray = @()
+	[System.Collections.ArrayList]$UsersToRemove = @()
 	
 	if ($RemovePotentialLockouts) {
 	
-		Write-Host '[*] Removing users within 1 attempt of locking out from list'
 		$CurrentTime = Get-Date
 		foreach ($User in $AllUserObjects) {
 			# Getting bad password counts and lst bad password time for each user
-			$BadCount = $User.Properties.badpwdcount
-			$SamAccountName = $User.Properties.samaccountname
+			$BadCount = $User.Properties.badpwdcount[0]
+			$SamAccountName = $User.Properties.samaccountname[0]
 			
 			try {
 				$BadPasswordTime = $User.Properties.badpasswordtime[0]
@@ -135,16 +134,16 @@ function Get-DomainUserList {
 
 			}
 		}
-		Write-Host -ForegroundColor Yellow "[*] Removing $($UsersToRemove.count) users from spray list due to being within 1 attempt of locking out"
+		Write-Verbose "[*] Removing $($UsersToRemove.count) users from spray list due to being within 1 attempt of locking out"
 	} else {
 		
 		foreach ($User in $AllUserObjects) {
-			$SamAccountName = $User.Properties.samaccountname
+			$SamAccountName = $User.Properties.samaccountname[0]
 			$UserListArray.Add($SamAccountName) > $null
 		}
 	}
 	
-	Write-Host "[*] Created a final userlist containing $($UserListArray.count) users gathered from the current user's domain"
+	Write-Verbose "[*] Created a final userlist containing $($UserListArray.count) users gathered from the current user's domain"
 	$UserListArray
 
 }
