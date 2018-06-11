@@ -50,14 +50,14 @@ function Get-DomainPasswordPolicy {
     
 	# do we check for Password Settings Objects (Fine-Grained Password Policies)
 	if ($CheckPso) {
-		$AccountLockoutThresholds = New-Object System.Collections.ArrayList
+		[System.Collections.ArrayList]$AccountLockoutThresholds = @()
 		$AccountLockoutThresholds.Add($DomainPolicy.Properties.lockoutThreshold.value) > $null
 
 		# Getting the AD behavior version to determine if fine-grained password policies are possible
 		$BehaviorVersion = [int]$DomainPolicy.Properties['msds-behavior-version'].item(0)
 		if ($BehaviorVersion -ge 3) {
 			# Determine if there are any fine-grained password policies
-			Write-Host '[*] Current domain is compatible with Fine-Grained Password Policy'
+			Write-Verbose '[*] Current domain is compatible with Fine-Grained Password Policy'
 			$ADSearcher = New-Object System.DirectoryServices.DirectorySearcher
 			$ADSearcher.SearchRoot = [ADSI] "LDAP://CN=Password Settings Container,CN=System,$DomainDn"
 			$ADSearcher.Filter = "(objectclass=msDS-PasswordSettings)"
@@ -66,12 +66,12 @@ function Get-DomainPasswordPolicy {
 				$PSOs = $ADSearcher.FindAll()			
 			}
 			catch {
-				Write-Host -ForegroundColor Yellow "[*] No permission to access Password Settings Container"
+				Write-Verbose '[*] No permission to access Password Settings Container'
 			}
 
 			if ( $PSOs.count -gt 0) {
 				
-				Write-Host "[*] A total of $($PSOs.count) Fine-Grained Password policies were found"
+				Write-Verbose "[*] A total of $($PSOs.count) Fine-Grained Password policies were found"
 				foreach($Entry in $PSOs) {
 					# Selecting the lockout threshold, min pwd length, and which groups the fine-grained password policy applies to
 					$PSOFineGrainedPolicy = $Entry | Select-Object -ExpandProperty Properties
@@ -82,11 +82,11 @@ function Get-DomainPasswordPolicy {
 					# adding lockout threshold to array for use later to determine which is the lowest.
 					$AccountLockoutThresholds.Add($PSOLockoutThreshold) > $null
 
-					Write-Host -ForegroundColor Yellow "[*] Fine-Grained Password Policy titled: $PSOPolicyName has a Lockout Threshold of $PSOLockoutThreshold attempts, minimum password length of $PSOMinPwdLength chars, and applies to $PSOAppliesTo"
+					Write-Verbose "[*] Fine-Grained Password Policy titled: $PSOPolicyName has a Lockout Threshold of $PSOLockoutThreshold attempts, minimum password length of $PSOMinPwdLength chars, and applies to $PSOAppliesTo"
 				}
 				
 			} else {
-				Write-Host "[*] NO Fine-Grained Password policies found"
+				Write-Verbose '[*] NO Fine-Grained Password policies found'
 			}
 			
 		}
