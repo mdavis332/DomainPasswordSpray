@@ -99,14 +99,18 @@ function Get-DomainUserList {
 	
 		$CurrentTime = Get-Date
 		foreach ($User in $AllUserObjects) {
+			$BadCount = $null
 			# Getting bad password counts and lst bad password time for each user
-			$BadCount = $User.Properties.badpwdcount[0]
+			try {
+				$BadCount = $User.Properties.badpwdcount[0]
+			} catch {
+				continue
+			}
 			$SamAccountName = $User.Properties.samaccountname[0]
 			
 			try {
 				$BadPasswordTime = $User.Properties.badpasswordtime[0]
-			}
-			catch {
+			} catch {
 				continue
 			}
 			
@@ -129,6 +133,9 @@ function Get-DomainUserList {
 
 			} elseif ($BadCount -eq 0) {
 				# if they get here, it means BadCount = 0, no worries about locking out the account, so we add it
+				$UserListArray.Add($SamAccountName) > $null
+			} elseif (-not $User.Properties.badpwdcount) {
+				# if we get here, it means the account doesn't log bad passwords, so add it
 				$UserListArray.Add($SamAccountName) > $null
 			}
 		}
