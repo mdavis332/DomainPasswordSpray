@@ -6,7 +6,7 @@ DomainPasswordSpray is a tool written in PowerShell to perform a password spray 
 - Nonexistent
 - Within 1 bad password attempt of a lockout
 
-This version has been updated with Warren Frame's (@RamblingCookieMonster) Invoke-Parallel to process the users simultaneously in batches of 50 and speed up the spray. In tests, this has reduced scan time by up to 83%. This module has been tested against 9000 users in a production AD environment with a runtime under 60 seconds.
+This module uses Warren Frame's (@RamblingCookieMonster) Invoke-Parallel to process the users simultaneously in batches of 20 and speed up the spray. In tests, this has reduced scan time by up to 83%. This module has been tested against 9000 users in a production AD environment with a runtime under 60 seconds.
 
 ## Quick Start Guide
 Open a PowerShell terminal from the Windows command line with 'powershell.exe -exec bypass'.
