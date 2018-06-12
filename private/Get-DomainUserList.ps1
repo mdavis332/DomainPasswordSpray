@@ -83,7 +83,10 @@ function Get-DomainUserList {
 		# uac 0x2 is ACCOUNTDISABLE
 		# uac 0x10 is LOCKOUT
 		# See http://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/. Thanks @egypt
-		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.804:=18)(|(accountExpires>=$Now)(accountExpires=0))$Filter)"
+		# lockoutTime>=1 corresponds to accounts that are locked out already
+		# accountExpires>=$Now corresponds to accounts that are set to expire sometime in the future
+		# accountExpires=0 corresponds to an account that is set to never expire
+		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.804:=18)(!lockoutTime>=1)(|(accountExpires>=$Now)(accountExpires=0))$Filter)"
 	} else {
 		$UserSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(|(accountExpires>=$Now)(accountExpires=0))$Filter)"
 	}
@@ -103,24 +106,20 @@ function Get-DomainUserList {
 			# Getting bad password counts and lst bad password time for each user
 			try {
 				$BadCount = $User.Properties.badpwdcount[0]
-			} catch {
-				continue
-			}
+			} catch {}
+			
 			$SamAccountName = $User.Properties.samaccountname[0]
 			
 			try {
 				$BadPasswordTime = $User.Properties.badpasswordtime[0]
-			} catch {
-				continue
-			}
-			
-			$LastBadPwd = [DateTime]::FromFileTime($BadPasswordTime)
+				$LastBadPwd = [datetime]::FromFileTime($BadPasswordTime)
+			} catch {}
+		
 			$TimeDifference = ($CurrentTime - $LastBadPwd).TotalMinutes
 
 			if ($BadCount) {
 				
-				[int]$UserBadCount = [convert]::ToInt32($BadCount, 10)
-				$AttemptsUntilLockout = $SmallestLockoutThreshold - $UserBadCount   
+				$AttemptsUntilLockout = $SmallestLockoutThreshold - $BadCount   
 				
 				# if there is no lockout threshold (ie, threshold = 0)
 				# if there is more than 1 attempt left before a user locks out 
@@ -139,7 +138,7 @@ function Get-DomainUserList {
 				$UserListArray.Add($SamAccountName) > $null
 			}
 		}
-		Write-Verbose "[*] Removed $RemovedUserCount users from spray list due to being within 1 attempt of locking out"
+		Write-Verbose "[*] Removed $RemovedUserCount users from spray list due to being within 1 attempt of locking out and having its last bad logon within the domain observation window of $ObservationWindow minutes"
 	} else {
 		
 		foreach ($User in $AllUserObjects) {
