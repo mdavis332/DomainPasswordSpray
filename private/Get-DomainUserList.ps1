@@ -53,8 +53,6 @@ function Get-DomainUserList {
 		# Using domain specified with -DomainName option
 		$DomainContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("domain",$DomainName)
 		$DomainObject =[System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($DomainContext)
-		$DomainDn = ([ADSI]"LDAP://$DomainName").distinguishedName
-		# $CurrentDomain = "LDAP://$DomainDn"
 		$CurrentPdc = "LDAP://$($DomainObject.PdcRoleOwner.Name)"
     } catch {
 		Write-Error '[*] Could not connect to the domain. Try again specifying the domain name with the -DomainName option'
@@ -68,9 +66,8 @@ function Get-DomainUserList {
 	# Get account lockout observation window to avoid running more than 1 password spray per observation window.
 	[int]$ObservationWindow = $DomainPolicy.ConvertLargeIntegerToInt64($DomainPolicy.lockOutObservationWindow.value)/-600000000
 	
-	$UserSearcher = New-Object System.DirectoryServices.DirectorySearcher([ADSI]$CurrentPdc)
-	$DirEntry = New-Object System.DirectoryServices.DirectoryEntry
-	$UserSearcher.SearchRoot = $DirEntry
+	$DirEntry = [ADSI]$CurrentPdc
+	$UserSearcher = [adsisearcher]$DirEntry
 
 	$UserSearcher.PropertiesToLoad.Add("samaccountname") > $null
 	$UserSearcher.PropertiesToLoad.Add("badpwdcount") > $null
