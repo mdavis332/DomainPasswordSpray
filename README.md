@@ -67,7 +67,7 @@ Invoke-DomainPasswordSpray -UserName (Get-ADUser -SearchBase "OU=Special,OU=Acco
 
 ![alt text](images/pwspray-demo480.gif "Animated gif demo")
 
-The above gif depicts a parallel spray against 250 users with 2 consecutive passwords, all in 18 seconds.
+The above gif depicts a parallel spray against 250 users with 2 consecutive passwords, all in 17 seconds.
 
 ## Planned Updates
 
