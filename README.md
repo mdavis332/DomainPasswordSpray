@@ -109,6 +109,8 @@ SOFTWARE.
 
 - [dafthack/DomainPasswordSpray](https://github.com/dafthack/DomainPasswordSpray)
 
+- [SteveSyfuhs/Kerberos.NET](https://github.com/SteveSyfuhs/Kerberos.NET)
+
 - [@RamblingCookieMonster](https://github.com/RamblingCookieMonster)
 
 - [@egypt](https://github.com/egypt)
