@@ -92,7 +92,7 @@ function Get-DomainPasswordPolicy {
 
         # Generate a userlist from the domain
         # Selecting the lowest account lockout threshold in the domain to avoid locking out any accounts.
-        [int]$SmallestLockoutThreshold = $AccountLockoutThresholds | Sort-Object | Select-Object -First 1
+        [int]$SmallestLockoutThreshold = $AccountLockoutThresholds -replace 0, 9999 | Sort-Object | Select-Object -First 1
 
         $AcctLockoutThreshold = @{Name = 'Account Lockout Threshold (Invalid logon attempts)'; Expression = { $SmallestLockoutThreshold } }
 
